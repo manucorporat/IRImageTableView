@@ -9,62 +9,59 @@
 #import "IRImageTableView.h"
 #import "UIImageView+WebCache.h"
 
-@interface IRImageTableView () <IRImageTableViewDelegate>
-
-@end
 
 @implementation IRImageTableView
-@synthesize tableView,datao;
 
-- (id)initWithTable:(UITableView *)tabla withData:(NSArray *)data{
-    
+- (id)initWithTable:(UITableView *)aTable withData:(NSArray *)aData
+{
     if (self = [super init]) {
-        tableView = tabla;
-        [tableView setDataSource:self];
-        [tableView setDelegate:self];
-        datao = data;
+        _data = aData;
+        _tableView = aTable;
+        [_tableView setDataSource:self];
+        [_tableView setDelegate:self];
     }
     
     return self;
 }
 
 #pragma mark UITableViewDataSource
--(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return [self.datao count];
+    return [_data count];
 }
 
--(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
     return 40;
 }
 
--(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSDictionary *data = [self.datao objectAtIndex:indexPath.section];
-    
-    UIImage *image = [[UIImage alloc] initWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[data objectForKey:@"image"]]]];
+    NSDictionary *metadata = [_data objectAtIndex:indexPath.section];
+    NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:metadata[@"image"]]];
+
+    UIImage *image = [[UIImage alloc] initWithData:data];
     UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
     
     CGFloat height = imageView.frame.size.height;
-    
     return height;
 }
 
--(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
-    NSDictionary *data = [self.datao objectAtIndex:section];
+    NSDictionary *data = [_data objectAtIndex:section];
     
-    UIView* customView = [[UIView alloc] initWithFrame:CGRectMake(10,0,300,40)];
+    UIView* customView = [[UIView alloc] initWithFrame:CGRectMake(10, 0, 300, 40)];
     customView.backgroundColor = [UIColor colorWithRed:245/255.0 green:245/255.0 blue:245/255.0f alpha:1.0];
     customView.alpha = 0.8999999999;
     customView.opaque = NO;
     [customView.layer setOpaque:NO];
     
-    UILabel *titulo = [[UILabel alloc]initWithFrame:CGRectMake(8, 10, 255, 20)];
-    titulo.text = [data objectForKey:@"name"];
-    titulo.backgroundColor = [UIColor clearColor];
-    [customView addSubview:titulo];
+    UILabel *title = [[UILabel alloc]initWithFrame:CGRectMake(8, 10, 255, 20)];
+    title.text = data[@"name"];
+    title.backgroundColor = [UIColor clearColor];
+    [customView addSubview:title];
     
     return customView;
 }
@@ -74,27 +71,24 @@
     return 1;
 }
 
--(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSDictionary *data = [self.datao objectAtIndex:indexPath.section];
+    NSDictionary *data = [_data objectAtIndex:indexPath.section];
     
     static NSString *CellIdentifier = @"Cell";
     
     UITableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
-    
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
-    
-    UIImage *image = [[UIImage alloc] initWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[data objectForKey:@"image"]]]];
-    
+
+    UIImage *image = [[UIImage alloc] initWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:data[@"image"]]]];
     UIImageView *imageViewo = [[UIImageView alloc] initWithImage:image];
     CGFloat width = imageViewo.frame.size.width;
     CGFloat height = imageViewo.frame.size.height;
     
     //The UIImage, set with the url before announced
     UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, width, height)];
-    [imageView sd_setImageWithURL:[NSURL URLWithString:[data objectForKey:@"image"]]];
+    [imageView sd_setImageWithURL:[NSURL URLWithString:data[@"image"]]];
     
     CGRect frame = [self.tableView rectForRowAtIndexPath:indexPath];
     imageView.center = CGPointMake(cell.contentView.bounds.size.width/2,frame.size.height/2);
@@ -116,10 +110,10 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if ([self.delegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)]){
-        return [self.delegate tableView:self.tableView didSelectRowAtIndexPath:indexPath];
+    if ([_delegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)]) {
+        return [_delegate tableView:_tableView didSelectRowAtIndexPath:indexPath];
     }
 }
 
